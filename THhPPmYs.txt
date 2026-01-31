@@ -1,0 +1,1173 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local SoundService = game:GetService("SoundService")
+local StarterGui = game:GetService("StarterGui")
+local HttpService = game:GetService("HttpService")
+
+local player = Players.LocalPlayer
+local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
+
+local gui = Instance.new("ScreenGui")
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 300, 0, 360)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.Visible = true
+frame.Parent = gui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
+if isMobile then
+	frame.AnchorPoint = Vector2.new(0.5, 0.6)
+	local function updateScaleAndPosition()
+		local viewport = workspace.CurrentCamera.ViewportSize
+		local scaleFactor = math.min(1, viewport.X / 400, viewport.Y / 500)
+		local scale = frame:FindFirstChildOfClass("UIScale") or Instance.new("UIScale")
+		scale.Scale = scaleFactor
+		scale.Parent = frame
+		frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+	end
+	updateScaleAndPosition()
+	workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateScaleAndPosition)
+else
+	frame.AnchorPoint = Vector2.new(0, 0)
+	frame.Position = UDim2.new(0.5, -150, 0.5, -200)
+end
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 40)
+title.BackgroundTransparency = 1
+title.Text = "TD Eclipsed UI script"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Parent = frame
+
+local tabsFrame = Instance.new("Frame")
+tabsFrame.Size = UDim2.new(1, 0, 0, 35)
+tabsFrame.Position = UDim2.new(0, 0, 0, 40)
+tabsFrame.BackgroundTransparency = 1
+tabsFrame.Parent = frame
+
+local padding = Instance.new("UIPadding")
+padding.PaddingLeft = UDim.new(0, 6)
+padding.PaddingRight = UDim.new(0, 6)
+padding.PaddingTop = UDim.new(0, 4)
+padding.PaddingBottom = UDim.new(0, 4)
+padding.Parent = tabsFrame
+
+local mainTab = Instance.new("TextButton")
+mainTab.Size = UDim2.new(1, 0, 1, 0)
+mainTab.Text = "Main"
+mainTab.Font = Enum.Font.GothamBold
+mainTab.TextSize = 16
+mainTab.TextColor3 = Color3.new(1, 1, 1)
+mainTab.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+mainTab.Parent = tabsFrame
+Instance.new("UICorner", mainTab).CornerRadius = UDim.new(0, 8)
+
+local content = Instance.new("ScrollingFrame")
+content.Size = UDim2.new(1, 0, 1, -100)
+content.Position = UDim2.new(0, 0, 0, 83)
+content.BackgroundTransparency = 1
+content.ScrollBarThickness = 10
+content.ScrollBarImageTransparency = 1
+content.CanvasSize = UDim2.new(0, 0, 0, 0)
+content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+content.Parent = frame
+
+local contentPadding = Instance.new("UIPadding")
+contentPadding.PaddingTop = UDim.new(0, 6)
+contentPadding.PaddingBottom = UDim.new(0, 12)
+contentPadding.PaddingLeft = UDim.new(0, 6)
+contentPadding.PaddingRight = UDim.new(0, 6)
+contentPadding.Parent = content
+
+local layout = Instance.new("UIListLayout")
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.Padding = UDim.new(0, 6)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.Parent = content
+
+local opened = true
+local function toggleUI()
+	local target
+	if opened then
+		if isMobile then
+			local viewport = workspace.CurrentCamera.ViewportSize
+			target = UDim2.new(0.5, 0, 0.5, viewport.Y/2 + frame.AbsoluteSize.Y * 0.4 + 150)
+		else
+			target = UDim2.new(0.5, -150, 1, 50)
+		end
+	else
+		if isMobile then
+			target = UDim2.new(0.5, 0, 0.5, 0)
+		else
+			target = UDim2.new(0.5, -150, 0.5, -200)
+		end
+	end
+	opened = not opened
+	TweenService:Create(frame,TweenInfo.new(0.35, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),{Position = target}):Play()
+end
+
+if isMobile then
+	local openBtn = Instance.new("TextButton")
+	openBtn.Size = UDim2.new(0, 52, 0, 52)
+	openBtn.Position = UDim2.new(1, -70, 0.5, -26)
+	openBtn.Text = "UI"
+	openBtn.Font = Enum.Font.GothamBold
+	openBtn.TextSize = 16
+	openBtn.TextColor3 = Color3.new(1, 1, 1)
+	openBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	openBtn.Parent = gui
+	Instance.new("UICorner", openBtn).CornerRadius = UDim.new(1, 0)
+	openBtn.MouseButton1Click:Connect(toggleUI)
+end
+
+UserInputService.InputBegan:Connect(function(input, gp)
+	if gp then return end
+	if not isMobile and input.KeyCode == Enum.KeyCode.Y then
+		toggleUI()
+	end
+end)
+
+local function makeButton(name)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0.95,0,0,38)
+	btn.Text = name
+	btn.Font = Enum.Font.GothamBold
+	btn.TextSize = 14
+	btn.TextColor3 = Color3.new(1,1,1)
+	btn.BackgroundColor3 = Color3.fromRGB(60,60,60)
+	btn.Parent = content
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
+	return btn
+end
+
+local btn1 = makeButton("Hitbox Expander (Gui)")
+local btn2 = makeButton("Highlights")
+local btn3 = makeButton("Jump no cd")
+local btn4 = makeButton("Botones 1.4")
+local btn5 = makeButton("Invencibilidad Mobile")
+local btn6 = makeButton("Soundtrack TD original")
+local btn7 = makeButton("Lms Music")
+
+btn1.MouseButton1Click:Connect(function()
+	local Players = game:GetService("Players")
+	local UserInputService = game:GetService("UserInputService")
+	local RunService = game:GetService("RunService")
+	
+	local player = Players.LocalPlayer
+	
+	local selectedPlayer = nil
+	local selectedButton = nil
+	local transparencyOn = false
+	local canCollideOn = false
+	local guiOpen = true
+	
+	local ScreenGui = Instance.new("ScreenGui")
+	ScreenGui.Name = "CollisionGUI"
+	ScreenGui.ResetOnSpawn = false
+	ScreenGui.DisplayOrder = 999
+	ScreenGui.Parent = player:WaitForChild("PlayerGui")
+	
+	local Main = Instance.new("Frame")
+	Main.Parent = ScreenGui
+	Main.Size = UDim2.new(0, 220, 0, 360)
+	Main.Position = UDim2.new(0.5, -110, 0.5, -180)
+	Main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	Main.BorderSizePixel = 0
+	Main.Visible = guiOpen
+	
+	local Title = Instance.new("TextLabel")
+	Title.Parent = Main
+	Title.Size = UDim2.new(1, 0, 0, 35)
+	Title.Text = "Collision Selector"
+	Title.BackgroundTransparency = 1
+	Title.TextColor3 = Color3.new(1, 1, 1)
+	Title.Font = Enum.Font.SourceSansBold
+	Title.TextSize = 20
+	
+	local List = Instance.new("ScrollingFrame")
+	List.Parent = Main
+	List.Position = UDim2.new(0, 10, 0, 45)
+	List.Size = UDim2.new(1, -20, 0, 120)
+	List.CanvasSize = UDim2.new(0, 0, 0, 0)
+	List.ScrollBarImageTransparency = 0.3
+	List.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	List.BorderSizePixel = 0
+	
+	local Layout = Instance.new("UIListLayout")
+	Layout.Parent = List
+	Layout.Padding = UDim.new(0, 5)
+	Layout.SortOrder = Enum.SortOrder.Name
+	
+	Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	    List.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y)
+	end)
+	
+	local SizeBox = Instance.new("TextBox")
+	SizeBox.Parent = Main
+	SizeBox.Position = UDim2.new(0, 10, 0, 175)
+	SizeBox.Size = UDim2.new(1, -20, 0, 30)
+	SizeBox.PlaceholderText = "Collision size (ej: 20)"
+	SizeBox.Text = ""
+	SizeBox.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+	SizeBox.TextColor3 = Color3.new(1, 1, 1)
+	SizeBox.BorderSizePixel = 0
+	SizeBox.Font = Enum.Font.SourceSans
+	SizeBox.TextSize = 16
+	
+	local Toggle = Instance.new("TextButton")
+	Toggle.Parent = Main
+	Toggle.Position = UDim2.new(0, 10, 0, 215)
+	Toggle.Size = UDim2.new(1, -20, 0, 30)
+	Toggle.Text = "Transparency: OFF"
+	Toggle.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+	Toggle.TextColor3 = Color3.new(1, 1, 1)
+	Toggle.BorderSizePixel = 0
+	Toggle.Font = Enum.Font.SourceSans
+	Toggle.TextSize = 16
+	
+	local CollideToggle = Instance.new("TextButton")
+	CollideToggle.Parent = Main
+	CollideToggle.Position = UDim2.new(0, 0, 0, 250)
+	CollideToggle.Size = UDim2.new(1, -20, 0, 30)
+	CollideToggle.Text = "CanCollide: OFF"
+	CollideToggle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+	CollideToggle.TextColor3 = Color3.new(1, 1, 1)
+	CollideToggle.BorderSizePixel = 0
+	CollideToggle.Font = Enum.Font.SourceSans
+	CollideToggle.TextSize = 16
+	
+	local Apply = Instance.new("TextButton")
+	Apply.Parent = Main
+	Apply.Position = UDim2.new(0, 10, 0, 285)
+	Apply.Size = UDim2.new(1, -20, 0, 35)
+	Apply.Text = "APPLY SIZE"
+	Apply.BackgroundColor3 = Color3.fromRGB(90, 90, 90)
+	Apply.TextColor3 = Color3.new(1, 1, 1)
+	Apply.BorderSizePixel = 0
+	Apply.Font = Enum.Font.SourceSansBold
+	Apply.TextSize = 18
+	
+	local ApplyAll = Instance.new("TextButton")
+	ApplyAll.Parent = Main
+	ApplyAll.Position = UDim2.new(0, 10, 0, 325)
+	ApplyAll.Size = UDim2.new(1, -20, 0, 35)
+	ApplyAll.Text = "APLICAR A TODOS"
+	ApplyAll.BackgroundColor3 = Color3.fromRGB(110, 110, 110)
+	ApplyAll.TextColor3 = Color3.new(1, 1, 1)
+	ApplyAll.BorderSizePixel = 0
+	ApplyAll.Font = Enum.Font.SourceSansBold
+	ApplyAll.TextSize = 18
+	
+	local MobileToggle = Instance.new("TextButton")
+	MobileToggle.Parent = ScreenGui
+	MobileToggle.Size = UDim2.new(0, 40, 0, 40)
+	MobileToggle.Position = UDim2.new(1, -50, 0, 10)
+	MobileToggle.Text = "☰"
+	MobileToggle.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+	MobileToggle.TextColor3 = Color3.new(1, 1, 1)
+	MobileToggle.BorderSizePixel = 0
+	MobileToggle.Font = Enum.Font.SourceSansBold
+	MobileToggle.TextSize = 24
+	MobileToggle.ZIndex = 10
+	
+	MobileToggle.MouseButton1Click:Connect(function()
+	    guiOpen = not guiOpen
+	    Main.Visible = guiOpen
+	end)
+	
+	local playerButtons = {}
+	
+	local function createPlayerButton(plr)
+	    if plr == player then return end
+	
+	    local btn = Instance.new("TextButton")
+	    btn.Size = UDim2.new(1, -10, 0, 28)
+	    btn.Text = plr.Name
+	    btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	    btn.TextColor3 = Color3.new(1, 1, 1)
+	    btn.BorderSizePixel = 0
+	    btn.Font = Enum.Font.SourceSans
+	    btn.TextSize = 15
+	    btn.Parent = List
+	
+	    btn.MouseButton1Click:Connect(function()
+	        if selectedButton then
+	            selectedButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+	        end
+	        selectedButton = btn
+	        btn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+	        selectedPlayer = plr
+	    end)
+	
+	    playerButtons[plr] = btn
+	end
+	
+	for _, plr in ipairs(Players:GetPlayers()) do
+	    createPlayerButton(plr)
+	end
+	
+	Players.PlayerAdded:Connect(createPlayerButton)
+	Players.PlayerRemoving:Connect(function(plr)
+	    local btn = playerButtons[plr]
+	    if btn then
+	        if selectedButton == btn then
+	            selectedPlayer = nil
+	            selectedButton = nil
+	        end
+	        btn:Destroy()
+	        playerButtons[plr] = nil
+	    end
+	end)
+	
+	local function getCollision(plr)
+	    if not plr.Character then return end
+	    local root = plr.Character:FindFirstChild("torso") or plr.Character:FindFirstChild("HumanoidRootPart")
+	    if not root then return end
+	    return root:FindFirstChild("collision")
+	end
+	
+	local function applyTransparency()
+	    for _, plr in ipairs(Players:GetPlayers()) do
+	        if plr ~= player then
+	            local col = getCollision(plr)
+	            if col and col:IsA("BasePart") then
+	                col.Transparency = transparencyOn and 0.8 or 1
+	            end
+	        end
+	    end
+	end
+	
+	Toggle.MouseButton1Click:Connect(function()
+	    transparencyOn = not transparencyOn
+	    Toggle.Text = "Transparency: " .. (transparencyOn and "ON" or "OFF")
+	    applyTransparency()
+	end)
+	
+	CollideToggle.MouseButton1Click:Connect(function()
+	    canCollideOn = not canCollideOn
+	    CollideToggle.Text = "CanCollide: " .. (canCollideOn and "ON" or "OFF")
+	end)
+	
+	Apply.MouseButton1Click:Connect(function()
+	    if not selectedPlayer then return end
+	    local size = tonumber(SizeBox.Text)
+	    if not size then return end
+	
+	    local col = getCollision(selectedPlayer)
+	    if col and col:IsA("BasePart") then
+	        col.Size = Vector3.new(size, size, size)
+	        col.CanCollide = canCollideOn
+	    end
+	end)
+	
+	ApplyAll.MouseButton1Click:Connect(function()
+	    local size = tonumber(SizeBox.Text)
+	    if not size then return end
+	
+	    for _, plr in ipairs(Players:GetPlayers()) do
+	        if plr ~= player then
+	            local col = getCollision(plr)
+	            if col and col:IsA("BasePart") then
+	                col.Size = Vector3.new(size, size, size)
+	                col.CanCollide = canCollideOn
+	            end
+	        end
+	    end
+	end)
+	
+	RunService.Heartbeat:Connect(function()
+	    for _, plr in ipairs(Players:GetPlayers()) do
+	        if plr ~= player then
+	            local col = getCollision(plr)
+	            if col and col:IsA("BasePart") then
+	                col.CanCollide = canCollideOn
+	            end
+	        end
+	    end
+	end)
+	
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	    if gameProcessed then return end
+	    if input.KeyCode == Enum.KeyCode.T then
+	        guiOpen = not guiOpen
+	        Main.Visible = guiOpen
+	    elseif input.KeyCode == Enum.KeyCode.M then
+	        ScreenGui:Destroy()
+	    end
+	end)
+
+btn2.MouseButton1Click:Connect(function()
+	local Players = game:GetService("Players")
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	
+	local player = Players.LocalPlayer
+	
+	local characterColors = {
+	    tails       = Color3.fromRGB(255, 165, 0),
+	    knuckles    = Color3.fromRGB(255, 0, 0),
+	    eggman      = Color3.fromRGB(255, 255, 0),
+	    amy         = Color3.fromRGB(255, 105, 180),
+	    cream       = Color3.fromRGB(255, 218, 185),
+	    sally       = Color3.fromRGB(210, 180, 140),
+	    charmy       = Color3.fromRGB(210, 180, 140),
+	    shadow      = Color3.fromRGB(0, 0, 0),
+	    rouge       = Color3.fromRGB(255, 255, 255),
+	    blaze       = Color3.fromRGB(237, 179, 255),
+	    espio       = Color3.fromRGB(128, 0, 128),
+	    silver      = Color3.fromRGB(192, 192, 192),
+	    sonic       = Color3.fromRGB(0, 0, 255),
+	    metalsonic  = Color3.fromRGB(0, 0, 155),
+	    kolossos    = Color3.fromRGB(139, 0, 0),
+	    sonicexe    = Color3.fromRGB(139, 0, 0),
+	    metalknuckles = Color3.fromRGB(181, 0, 0),
+	    vector      = Color3.fromRGB(32, 197, 0),
+	    furnace     = Color3.fromRGB(139, 0, 0),
+	    doll        = Color3.fromRGB(139, 0, 0),
+	    tetanus     = Color3.fromRGB(139, 0, 0),
+	    lordx       = Color3.fromRGB(139, 0, 0),
+	    tailsdoll   = Color3.fromRGB(139, 0, 0),
+	    fleetway    = Color3.fromRGB(255, 242, 0)
+	}
+	
+	local shadowOutlineColor = Color3.fromRGB(200, 200, 200)
+	
+	local highlightMap = {}  -- [displayChildName] = {highlight = Highlight, conn = Connection}
+	
+	local function refreshESP()
+	    local displayPlayersFolder = ReplicatedStorage:FindFirstChild("displayPlayers")
+	    if not displayPlayersFolder then return end
+
+	    for displayName, entry in pairs(highlightMap) do
+	        if not displayPlayersFolder:FindFirstChild(displayName) then
+	            entry.highlight:Destroy()
+	            if entry.conn then
+	                entry.conn:Disconnect()
+	            end
+	            highlightMap[displayName] = nil
+	        end
+	    end
+	
+	    for _, child in ipairs(displayPlayersFolder:GetChildren()) do
+	        local stats = child:FindFirstChild("stats")
+	        if not stats then continue end
+	
+	        local charObj = stats:FindFirstChild("character")
+	        if not charObj or not charObj:IsA("StringValue") then continue end
+	
+	        local givenCharacter = charObj.Value:lower()
+	        local color = characterColors[givenCharacter]
+	        if not color then continue end
+	
+	        local model = workspace:FindFirstChild(child.Name)
+	        if not model or not model:IsA("Model") then continue end
+	        if player.Character and model == player.Character then continue end
+	
+	        local displayName = child.Name
+	        local entry = highlightMap[displayName]
+	
+	        local isShadow = givenCharacter == "shadow"
+	        local fillColor = isShadow and Color3.fromRGB(0, 0, 0) or color
+	        local outlineColor = isShadow and shadowOutlineColor or color
+	
+	        if not entry then
+	            local highlight = Instance.new("Highlight")
+	            highlight.Adornee = model
+	            highlight.FillColor = fillColor
+	            highlight.OutlineColor = outlineColor
+	            highlight.FillTransparency = 0.4
+	            highlight.OutlineTransparency = 0
+	            highlight.Enabled = true
+	            highlight.Parent = workspace
+	
+	            local conn = charObj.Changed:Connect(function()
+	                local newChar = charObj.Value:lower()
+	                local newColor = characterColors[newChar]
+	                if newColor then
+	                    local newIsShadow = newChar == "shadow"
+	                    highlight.FillColor = newIsShadow and Color3.fromRGB(0, 0, 0) or newColor
+	                    highlight.OutlineColor = newIsShadow and shadowOutlineColor or newColor
+	                end
+	            end)
+	
+	            highlightMap[displayName] = {highlight = highlight, conn = conn}
+	        else
+	            entry.highlight.FillColor = fillColor
+	            entry.highlight.OutlineColor = outlineColor
+	        end
+	    end
+	end
+	
+	local display = ReplicatedStorage:WaitForChild("displayPlayers")
+	display.ChildAdded:Connect(refreshESP)
+	display.ChildRemoved:Connect(refreshESP)
+	
+	task.spawn(function()
+	    while task.wait(1) do
+	        refreshESP()
+	    end
+	end)
+	
+	refreshESP()
+
+btn3.MouseButton1Click:Connect(function()
+	local Players = game:GetService("Players")
+	local UserInputService = game:GetService("UserInputService")
+	
+	local LocalPlayer = Players.LocalPlayer
+	local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+	
+	local jumping = false
+	local JUMP_POWER = 60
+	
+	local function getHumanoid()
+		local char = LocalPlayer.Character
+		return char and char:FindFirstChildOfClass("Humanoid")
+	end
+	
+	local function forceJumpPower(humanoid)
+		if not humanoid then return end
+	
+		humanoid.JumpPower = JUMP_POWER
+	
+		humanoid:GetPropertyChangedSignal("JumpPower"):Connect(function()
+			if humanoid.JumpPower ~= JUMP_POWER then
+				humanoid.JumpPower = JUMP_POWER
+			end
+		end)
+	end
+	
+	local function isGrounded()
+		local hum = getHumanoid()
+		if not hum then return false end
+	
+		local state = hum:GetState()
+		return state == Enum.HumanoidStateType.Running
+			or state == Enum.HumanoidStateType.Landed
+	end
+	
+	local function jump()
+		local hum = getHumanoid()
+		if hum and isGrounded() then
+			hum:ChangeState(Enum.HumanoidStateType.Jumping)
+		end
+	end
+	
+	local function startJumping()
+		if jumping then return end
+		jumping = true
+	
+		task.spawn(function()
+			while jumping do
+				jump()
+				task.wait()
+			end
+		end)
+	end
+	
+	local function stopJumping()
+		jumping = false
+	end
+	
+	local function setupJumpButton()
+		local touchGui = PlayerGui:FindFirstChild("TouchGui")
+		if not touchGui then return end
+	
+		local frame = touchGui:FindFirstChild("TouchControlFrame")
+		if not frame then return end
+	
+		local oldButton = frame:FindFirstChild("JumpButton")
+		if oldButton then oldButton:Destroy() end
+	
+		local jumpButton = Instance.new("ImageButton")
+		jumpButton.Name = "JumpButton"
+		jumpButton.Size = UDim2.new(0, 120, 0, 120)
+		jumpButton.Position = UDim2.new(1, -150, 1, -150)
+		jumpButton.BackgroundColor3 = Color3.new(0, 0, 0)
+		jumpButton.AutoButtonColor = true
+		jumpButton.Parent = frame
+	
+		jumpButton.MouseButton1Down:Connect(startJumping)
+		jumpButton.MouseButton1Up:Connect(stopJumping)
+	end
+	
+	UserInputService.InputBegan:Connect(function(input, gp)
+		if not gp and input.KeyCode == Enum.KeyCode.Space then
+			startJumping()
+		end
+	end)
+	
+	UserInputService.InputEnded:Connect(function(input)
+		if input.KeyCode == Enum.KeyCode.Space then
+			stopJumping()
+		end
+	end)
+	
+	LocalPlayer.CharacterAdded:Connect(function(character)
+		local hum = character:WaitForChild("Humanoid")
+	
+		forceJumpPower(hum)
+		setupJumpButton()
+	end)
+	
+	if LocalPlayer.Character then
+		local hum = LocalPlayer.Character:FindFirstChild("Humanoid")
+		if hum then
+			forceJumpPower(hum)
+		end
+	end
+	
+	setupJumpButton()
+
+btn4.MouseButton1Click:Connect(function()
+	local Players = game:GetService("Players")
+	local player = Players.LocalPlayer
+	local playerGui = player:WaitForChild("PlayerGui")
+	
+	local mainGui = playerGui:WaitForChild("gui")
+	
+	local function applyToFrame(frame)
+	    if not frame or not frame:IsA("GuiObject") then return end
+	
+	    local blood = frame:FindFirstChild("blood")
+	    if blood and blood:IsA("ImageLabel") then
+	        blood.Image = "rbxassetid://103033247183322"
+	        blood.ImageColor3 = Color3.fromRGB(126, 0, 0)
+	        blood.ImageTransparency = 0.3
+	        local size, pos = blood.Size, blood.Position
+	        blood.Size = UDim2.new(size.X.Scale + 0.5, size.X.Offset, size.Y.Scale + 0.5, size.Y.Offset)
+	        blood.Position = UDim2.new(pos.X.Scale - 0.25, pos.X.Offset, pos.Y.Scale - 0.25, pos.Y.Offset)
+	    end
+	
+	    local glow = frame:FindFirstChild("glow")
+	    if glow and glow:IsA("ImageLabel") then
+	        glow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+	        glow.ImageTransparency = 0.46
+	    end
+	
+	    local ring = frame:FindFirstChild("ring")
+	    if ring and ring:IsA("ImageLabel") then
+	        local gradient = ring:FindFirstChildOfClass("UIGradient") or Instance.new("UIGradient")
+	        gradient.Rotation = 90
+	        gradient.Color = ColorSequence.new({
+	            ColorSequenceKeypoint.new(0,   Color3.fromRGB(255, 255, 255)),
+	            ColorSequenceKeypoint.new(0.624, Color3.fromRGB(172, 172, 172)),
+	            ColorSequenceKeypoint.new(1,   Color3.fromRGB(0, 0, 0))
+	        })
+	        gradient.Parent = ring
+	        ring.ImageColor3 = Color3.fromRGB(255, 0, 0)
+	    end
+	
+	    local abilityName = frame:FindFirstChild("abilityName")
+	    if abilityName and abilityName:IsA("TextLabel") then
+	        local existingGradient = abilityName:FindFirstChildOfClass("UIGradient")
+	        if existingGradient then existingGradient:Destroy() end
+	        
+	        local newGradient = Instance.new("UIGradient")
+	        newGradient.Rotation = 90
+	        newGradient.Color = ColorSequence.new({
+	            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+	            ColorSequenceKeypoint.new(1, Color3.fromRGB(67, 67, 67))
+	        })
+	        newGradient.Parent = abilityName
+	
+	        local stroke = abilityName:FindFirstChildOfClass("UIStroke")
+	        if stroke then
+	            stroke.Color = Color3.fromRGB(255, 0, 0)
+	            stroke.Thickness = 1.2
+	        end
+	    end
+	
+	    local cooldownFrame = frame:FindFirstChild("cooldown")
+	    if cooldownFrame and cooldownFrame:IsA("Frame") then
+	        local currentCooldown = cooldownFrame:FindFirstChild("currentCooldown")
+	        if currentCooldown and currentCooldown:IsA("TextLabel") then
+	            -- Gradient
+	            local existingGradient = currentCooldown:FindFirstChildOfClass("UIGradient")
+	            if existingGradient then existingGradient:Destroy() end
+	
+	            local newGradient = Instance.new("UIGradient")
+	            newGradient.Rotation = 9
+	            newGradient.Color = ColorSequence.new({
+	                ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+	                ColorSequenceKeypoint.new(1, Color3.fromRGB(67, 67, 67))
+	            })
+	            newGradient.Parent = currentCooldown
+	
+	            local stroke = currentCooldown:FindFirstChildOfClass("UIStroke")
+	            if stroke then
+	                stroke.Color = Color3.fromRGB(85, 0, 0)
+	                stroke.Thickness = 1.6
+	            end
+	        end
+	    end
+	end
+	
+	local function watch(root)
+	    if not root then return end
+	
+	    applyToFrame(root)
+	    for _, obj in ipairs(root:GetDescendants()) do
+	        applyToFrame(obj)
+	    end
+	
+	    root.DescendantAdded:Connect(function(obj)
+	        applyToFrame(obj)
+	    end)
+	end
+	
+	local targets = {
+	    "abilities",
+	    "pingButton",
+	    "revive",
+	    "downed",
+	    "run",
+	}
+	
+	local function observeHUD(hud)
+	    if not hud then return end
+	
+	    for _, name in ipairs(targets) do
+	        local target = hud:FindFirstChild(name, true)
+	        if target then
+	            watch(target)
+	        end
+	    end
+	end
+	
+	local hud = mainGui:WaitForChild("hud")
+	observeHUD(hud)
+	
+	mainGui.ChildAdded:Connect(function(child)
+	    if child.Name == "hud" then
+	        task.wait(0.1)
+	        observeHUD(child)
+	    end
+	end)
+	
+	print("Blood/glow/ring/abilityName/cooldown theme activo y persistente ✅")
+	
+btn5.MouseButton1Click:Connect(function()
+	local Players = game:GetService("Players")
+	local UserInputService = game:GetService("UserInputService")
+	local StarterGui = game:GetService("StarterGui")
+	local ContextActionService = game:GetService("ContextActionService")
+	
+	local LocalPlayer = Players.LocalPlayer
+	local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+	
+	local Remote = workspace.game.WorkspaceStuff.SetInvincibilityScript.SetInvincibility
+	
+	local enabled = false
+	local running = false
+	
+	local function notify(title, text)
+	    pcall(function()
+	        StarterGui:SetCore("SendNotification", {
+	            Title = title,
+	            Text = text,
+	            Duration = 3,
+	        })
+	    end)
+	end
+	
+	    if running then return end
+	    running = true
+	    task.spawn(function()
+	        while running do
+	            local char = LocalPlayer.Character
+	            if char and char:FindFirstChild("HumanoidRootPart") then
+	                pcall(function()
+	                    Remote:FireServer(char, "Add")
+	                end)
+	            end
+	            task.wait(0.5)
+	        end
+	        running = false
+	    end)
+	end
+	
+	local function toggleInvincibility()
+	    enabled = not enabled
+	    
+	    if enabled then
+	        notify("Invencibilidad", "ACTIVADA")
+	        startLoop()
+	    else
+	        notify("Invencibilidad", "DESACTIVADA")
+	        running = false
+	        local char = LocalPlayer.Character
+	        if char then
+	            pcall(function()
+	                Remote:FireServer(char, "Remove")
+	            end)
+	        end
+	    end
+	    
+	    updateButtonText()
+	end
+	
+	UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	    if gameProcessed then return end
+	    if input.KeyCode == Enum.KeyCode.V then
+	        toggleInvincibility()
+	    end
+	end)
+	
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "InvincibilityGUI"
+	screenGui.ResetOnSpawn = false
+	screenGui.Parent = PlayerGui
+	
+	local button = Instance.new("TextButton")
+	button.Size = UDim2.new(0, 160, 0, 50)
+	button.Position = UDim2.new(1, -170, 0, 10)  -- Esquina superior derecha (anclado)
+	button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	button.BorderSizePixel = 2
+	button.BorderColor3 = Color3.fromRGB(100, 100, 100)
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.Font = Enum.Font.GothamBold
+	button.TextSize = 18
+	button.Text = "Invencibilidad: OFF"
+	button.BackgroundTransparency = 0.4
+	button.Parent = screenGui
+	
+	local function updateButtonText()
+	    button.Text = "Invencibilidad: " .. (enabled and "ON" or "OFF")
+	    button.BackgroundColor3 = enabled and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(150, 0, 0)
+	end
+	
+	button.MouseButton1Click:Connect(toggleInvincibility)
+	button.TouchTap:Connect(toggleInvincibility)
+	
+	local dragging = false
+	local dragInput
+	local lastPosition
+	
+	button.InputBegan:Connect(function(input)
+	    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+	        dragging = true
+	        lastPosition = input.Position
+	        
+	        local moveConn
+	        moveConn = input.Changed:Connect(function()
+	            if dragging and input.UserInputState == Enum.UserInputState.Change then
+	                local delta = input.Position - lastPosition
+	                button.Position = button.Position + UDim2.fromOffset(delta.X, delta.Y)
+	                lastPosition = input.Position
+	            end
+	        end)
+	        
+	        local endConn
+	        endConn = input.Changed:Connect(function()
+	            if input.UserInputState == Enum.UserInputState.End then
+	                dragging = false
+	                if moveConn then moveConn:Disconnect() end
+	                if endConn then endConn:Disconnect() end
+	            end
+	        end)
+	    end
+	end)
+	
+	LocalPlayer.CharacterAdded:Connect(function()
+	    if enabled then
+	        task.wait(1)
+	        startLoop()
+	    end
+	end)
+	
+	updateButtonText()
+	
+btn6.MouseButton1Click:Connect(function()
+	local SoundService = game:GetService("SoundService")
+	local ContentProvider = game:GetService("ContentProvider")
+
+	local function loadAsset(url, filename)
+		local ok, data = pcall(function()
+			return game:HttpGet(url, true)
+		end)
+
+		if ok and data then
+			pcall(writefile, filename, data)
+		else
+			warn("No se pudo descargar la música desde:", url)
+		end
+
+		return isfile(filename) and getcustomasset(filename) or nil
+	end
+
+	local MUSIC_MAP = {
+		["rbxassetid://129419473647568"] = "https://raw.githubusercontent.com/Disaster955/TD-E/main/Hill.mp3",
+		["rbxassetid://97481294713917"]  = "https://raw.githubusercontent.com/Disaster955/TD-E/main/YCR.mp3",
+		["rbxassetid://120557912060208"] = "https://raw.githubusercontent.com/Disaster955/TD-E/main/YCRE.mp3",
+		["rbxassetid://121941894006487"] = "https://raw.githubusercontent.com/Disaster955/TD-E/main/HillGym.mp3",
+		["rbxassetid://128251131354822"] = "https://raw.githubusercontent.com/Disaster955/TD-E/main/NP.mp3",
+		["rbxassetid://109637297157745"] = "https://raw.githubusercontent.com/Disaster955/TD-E/main/NP2.mp3",
+		["rbxassetid://87823197449498"]  = "https://raw.githubusercontent.com/Disaster955/TD-E/main/KAF.mp3",
+		["rbxassetid://80362707969258"]  = "https://raw.githubusercontent.com/Disaster955/TD-E/main/HAS.mp3",
+		["rbxassetid://123569866768197"] = "https://raw.githubusercontent.com/Disaster955/TD-E/main/Base.mp3",
+		["rbxassetid://123687616577443"] = "https://raw.githubusercontent.com/Disaster955/TD-E/main/Lobby.mp3",
+		["rbxassetid://131852747785799"] = "https://raw.githubusercontent.com/Disaster955/TD-E/main/HillE.mp3",
+		["rbxassetid://70966155153578"]  = "https://raw.githubusercontent.com/Disaster955/TD-E/main/H&S1.mp3",
+		["rbxassetid://99753771426362"]  = "https://raw.githubusercontent.com/Disaster955/TD-E/main/HillGymE.mp3",
+		["rbxassetid://91872066077392"]  = "https://raw.githubusercontent.com/Disaster955/TD-E/main/KAFE.mp3",
+		["rbxassetid://125264422451398"] = "https://raw.githubusercontent.com/Disaster955/TD-E/main/HASE.mp3"
+	}
+
+	local PRELOADED_ASSETS = {}
+
+	for id, url in pairs(MUSIC_MAP) do
+		local filename = "dynamic_"..string.gsub(id, "rbxassetid://", "")..".mp3"
+		local asset = loadAsset(url, filename)
+		if asset then
+			PRELOADED_ASSETS[id] = asset
+			pcall(function()
+				ContentProvider:PreloadAsync({asset})
+			end)
+		end
+	end
+
+	local mainSounds = SoundService:WaitForChild("mainSounds")
+	local sound = mainSounds:WaitForChild("current")
+
+	local busy = false
+
+	local function checkAndReplace()
+		if busy then return end
+
+		local asset = PRELOADED_ASSETS[tostring(sound.SoundId)]
+		if not asset then return end
+
+		busy = true
+
+		local oldVolume = sound.Volume
+		local oldLooped = sound.Looped
+		local oldRollOff = sound.RollOffMode
+		local oldMin = sound.RollOffMinDistance
+		local oldMax = sound.RollOffMaxDistance
+		local oldTime = sound.TimePosition
+		local wasPlaying = sound.Playing
+
+		sound:Stop()
+		sound.SoundId = asset
+
+		sound.Volume = oldVolume
+		sound.Looped = oldLooped
+		sound.RollOffMode = oldRollOff
+		sound.RollOffMinDistance = oldMin
+		sound.RollOffMaxDistance = oldMax
+
+		if oldTime and oldTime > 0 then
+			sound.TimePosition = oldTime
+		end
+
+		if wasPlaying then
+			pcall(function()
+				sound:Play()
+			end)
+		end
+
+		busy = false
+		print("🎵 Música Ultra Pro reemplazada (volumen preservado)")
+	end
+
+	checkAndReplace()
+
+	sound:GetPropertyChangedSignal("SoundId"):Connect(function()
+		checkAndReplace()
+	end)
+end)
+
+btn7.MouseButton1Click:Connect(function()
+	local ReplicatedStorage = game:GetService("ReplicatedStorage")
+	local SoundService = game:GetService("SoundService")
+	local ContentProvider = game:GetService("ContentProvider")
+	local Players = game:GetService("Players")
+
+	local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+	local gui = Instance.new("ScreenGui")
+	gui.ResetOnSpawn = false
+	gui.Parent = playerGui
+
+	local label = Instance.new("TextLabel")
+	label.Parent = gui
+	label.Size = UDim2.new(0,200,0,30)
+	label.Position = UDim2.new(0,10,1,-40)
+	label.BackgroundTransparency = 1
+	label.Text = "LMS script v4.1"
+	label.TextColor3 = Color3.new(1,1,1)
+	label.TextScaled = true
+	label.ZIndex = 9999
+
+	local IGNORED = { sonicexe=true, kolossos=true, tailsdoll=true, nexus=true, lordx=true, fleetway=true, tetanus=true, doll=true }
+	local TAKEN = { tails=true, knuckles=true, eggman=true, amy=true, cream=true, sally=true, shadow=true, rouge=true, blaze=true, silver=true, sonic=true, metalsonic=true, metalknuckles=true, vector=true, charmy=true, espio=true, supersonic=true }
+
+	local URLS = {
+		tails = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/tails.mp3",
+		knuckles = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/kncukles.mp3",
+		eggman = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/eggman.mp3",
+		amy = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/amy.mp3",
+		cream = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/cream.mp3",
+		sally = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/sally.mp3",
+		shadow = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/shadow.mp3",
+		rouge = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/rouge.mp3",
+		metalsonic = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/metal.mp3",
+		metalknuckles = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/metal.mp3",
+		blaze = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/blaze.mp3",
+		silver = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/silver.mp3",
+		charmy = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/charmy.mp3",
+		espio = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/espio.mp3",
+		vector = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/vector.mp3",
+		sonic = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/sonic.mp3",
+		supersonic = "https://raw.githubusercontent.com/Disaster955/TD-LMS/main/supersonic.mp3"
+	}
+
+	local BLOCKED_IDS = {
+		["rbxassetid://99659949904427"]=true,
+		["rbxassetid://89078804249883"]=true,
+		["rbxassetid://94533366592785"]=true,
+		["rbxassetid://97000966149833"]=true,
+		["rbxassetid://82816133427301"]=true,
+		["rbxassetid://96089772790619"]=true
+	}
+
+	local function loadAsset(url, filename)
+		local ok, data = pcall(function() return game:HttpGet(url, true) end)
+		if ok and data then pcall(writefile, filename, data) end
+		return isfile(filename) and getcustomasset(filename) or nil
+	end
+
+	local function getEligiblePlayers()
+		local eligible = {}
+
+		for _, player in pairs(ReplicatedStorage:WaitForChild("displayPlayers"):GetChildren()) do
+			local stats = player:FindFirstChild("stats")
+			local charValue = stats and stats:FindFirstChild("character")
+
+			if charValue and not IGNORED[charValue.Value:lower()] and TAKEN[charValue.Value:lower()] then
+				local blood = player:FindFirstChild("blood")
+				local health = player:FindFirstChild("health")
+
+				local alive = false
+
+				if (health and health.Value > 0) or (blood and blood.Value > 0) then
+					alive = true
+				end
+
+				if alive then
+					table.insert(eligible, player)
+				end
+			end
+		end
+
+		return eligible
+	end
+
+	local function getTargetPlayer()
+		local eligible = getEligiblePlayers()
+		if #eligible == 1 then
+			return eligible[1]
+		end
+		return nil
+	end
+
+	local activeSound = nil
+	local blockedReady = false
+	local currentSound = SoundService:WaitForChild("mainSounds"):WaitForChild("current")
+
+	spawn(function()
+		while true do
+			if currentSound and BLOCKED_IDS[currentSound.SoundId] then
+				blockedReady = true
+				if currentSound.Playing then
+					currentSound:Stop()
+				end
+			end
+			task.wait(0.05)
+		end
+	end)
+
+	local function createSound(player)
+		if activeSound then return end
+		if not player then return end
+
+		local charName = player.stats.character.Value:lower()
+		local url = URLS[charName]
+		if not url then return end
+
+		local filename = "dynamic_"..charName..".mp3"
+		local asset = loadAsset(url, filename)
+		if not asset then return end
+
+		local newSound = Instance.new("Sound")
+		newSound.Parent = SoundService.mainSounds
+		newSound.Volume = 1.5
+		newSound.Looped = true
+		newSound.RollOffMode = currentSound.RollOffMode
+		newSound.RollOffMinDistance = currentSound.RollOffMinDistance
+		newSound.RollOffMaxDistance = currentSound.RollOffMaxDistance
+		newSound.SoundId = asset
+		newSound:Play()
+
+		activeSound = newSound
+	end
+
+	local function tryStartMusic()
+		if not blockedReady then return end
+		if activeSound then return end
+
+		local target = getTargetPlayer()
+		if target then
+			createSound(target)
+		end
+	end
+
+	currentSound:GetPropertyChangedSignal("SoundId"):Connect(function()
+		if not BLOCKED_IDS[currentSound.SoundId] then
+			blockedReady = false
+			if activeSound then
+				activeSound:Stop()
+				activeSound:Destroy()
+				activeSound = nil
+			end
+		else
+			blockedReady = true
+			tryStartMusic()
+		end
+	end)
+
+	local displayPlayers = ReplicatedStorage:WaitForChild("displayPlayers")
+
+	local function monitorPlayer(player)
+		local stats = player:FindFirstChild("stats")
+		if not stats then return end
+
+		local char = stats:FindFirstChild("character")
+		if char then
+			char:GetPropertyChangedSignal("Value"):Connect(tryStartMusic)
+		end
+
+		for _, name in pairs({"blood","health"}) do
+			local stat = player:FindFirstChild(name)
+			if stat then
+				stat:GetPropertyChangedSignal("Value"):Connect(tryStartMusic)
+			end
+		end
+	end
+
+	for _, player in pairs(displayPlayers:GetChildren()) do
+		monitorPlayer(player)
+	end
+
+	displayPlayers.ChildAdded:Connect(function(player)
+		monitorPlayer(player)
+		tryStartMusic()
+	end)
+end)
