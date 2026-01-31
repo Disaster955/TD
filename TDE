@@ -403,6 +403,7 @@ btn1.MouseButton1Click:Connect(function()
 	        ScreenGui:Destroy()
 	    end
 	end)
+end)
 
 btn2.MouseButton1Click:Connect(function()
 	local Players = game:GetService("Players")
@@ -516,6 +517,7 @@ btn2.MouseButton1Click:Connect(function()
 	end)
 	
 	refreshESP()
+end)
 
 btn3.MouseButton1Click:Connect(function()
 	local Players = game:GetService("Players")
@@ -625,6 +627,7 @@ btn3.MouseButton1Click:Connect(function()
 	end
 	
 	setupJumpButton()
+end)
 
 btn4.MouseButton1Click:Connect(function()
 	local Players = game:GetService("Players")
@@ -753,6 +756,7 @@ btn4.MouseButton1Click:Connect(function()
 	end)
 	
 	print("Blood/glow/ring/abilityName/cooldown theme activo y persistente ✅")
+end)
 	
 btn5.MouseButton1Click:Connect(function()
 	local Players = game:GetService("Players")
@@ -884,6 +888,7 @@ btn5.MouseButton1Click:Connect(function()
 	end)
 	
 	updateButtonText()
+end)
 	
 btn6.MouseButton1Click:Connect(function()
 	local SoundService = game:GetService("SoundService")
@@ -1170,4 +1175,5 @@ btn7.MouseButton1Click:Connect(function()
 		monitorPlayer(player)
 		tryStartMusic()
 	end)
+
 end)
